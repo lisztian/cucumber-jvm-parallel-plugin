@@ -1,10 +1,16 @@
 package com.github.timm.cucumber.generate;
 
 import com.github.timm.cucumber.generate.name.ClassNamingScheme;
-import com.github.timm.cucumber.generate.name.TagNamingScheme;
-import com.github.timm.cucumber.options.RuntimeOptions;
-import com.github.timm.cucumber.options.TagParser;
-
+import gherkin.AstBuilder;
+import gherkin.Parser;
+import gherkin.TokenMatcher;
+import gherkin.ast.Examples;
+import gherkin.ast.GherkinDocument;
+import gherkin.ast.Scenario;
+import gherkin.ast.ScenarioDefinition;
+import gherkin.ast.ScenarioOutline;
+import gherkin.ast.TableRow;
+import gherkin.ast.Tag;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -13,6 +19,8 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -72,148 +80,120 @@ public class CucumberItGenerator {
         Collection<File> featureFiles = new ArrayList<File>();
         if (overriddenParameters.getFeaturePaths().size() != 0) {
             for (String f : overriddenParameters.getFeaturePaths()) {
-                System.out.println("Features :- " + f);
                 featureFiles.add(new File(f));
             }
         } else {
             featureFiles = FileUtils.listFiles(config.getFeaturesDirectory(),
                 new String[] {"feature"}, true);
         }
-        if (config.filterFeaturesByTags()) {
-            List<String> parsedTags = new ArrayList<String>();
-            String[] allTags = overriddenParameters.getTags().split(",");
-            for (String t : allTags) {
-                parsedTags.add(t.replaceAll("\"", ""));
-            }
-            for (final String tag : parsedTags) {
-                for (final File file : featureFiles) {
-                    String fileContents = null;
+        List<String> parsedTags = new ArrayList<String>();
+        String[] allTags = overriddenParameters.getTags().split(",");
+        for (String t : allTags) {
+            parsedTags.add(t.replaceAll("\"", "").replaceAll("\\s+", ""));
+        }
+        for (final String tag : parsedTags) {
+            for (final File file : featureFiles) {
+                try {
+                    Parser<GherkinDocument> parser = new Parser<>(new AstBuilder());
+                    GherkinDocument gherkinDocument = null;
                     try {
-                        fileContents = FileUtils.readFileToString(file);
-                    } catch (IOException e) {
+                        gherkinDocument = parser.parse(new FileReader(file),
+                            new TokenMatcher());
+                    } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
-                    if ( !shouldSkipFile(file) && fileContainsMatchingTags(fileContents, tag)) {
-                        System.out.println("File " + file.getName() + " contains tag " + tag);
-                        outputFileName = classNamingScheme.generate(file.getName());
-                        final File outputFile = new File(outputDirectory, outputFileName + ".java");
-                        setFeatureFileLocation(file);
-                        FileWriter writer = null;
-                        try {
-                            writer = new FileWriter(outputFile);
-                            writeContentFromTemplate(writer, tag);
-                        } catch (final IOException e) {
-                            throw new MojoExecutionException("Error creating file "
-                                + outputFile, e);
-                        } finally {
-                            if (writer != null) {
-                                try {
-                                    writer.close();
-                                } catch (final IOException e) {
-                                    // ignore
+                    List<Tag> featureTags = gherkinDocument.getFeature().getTags();
+                    if (config.filterFeaturesByTags()) {
+                        for (Tag t : featureTags) {
+                            if (tag.startsWith("~") && ("~" + t.getName()).equalsIgnoreCase(tag)) {
+                                // Don't generate file
+                            }
+                            if (tag.equalsIgnoreCase(t.getName())) {
+                                setFeatureFileLocation(file);
+                                generateItFiles(tag, file.getName(), outputDirectory);
+                            }
+                        }
+                    } else {
+                        List<ScenarioDefinition> definitions = gherkinDocument.getFeature()
+                            .getChildren();
+                        for (ScenarioDefinition definition : definitions) {
+                            if (definition instanceof ScenarioOutline) {
+                                ScenarioOutline scenarioOutline = (ScenarioOutline) definition;
+                                List<Tag> outlineTags = scenarioOutline.getTags();
+                                for (Tag t : outlineTags) {
+                                    if (tag.startsWith("~") && ("~" + t.getName())
+                                        .equalsIgnoreCase(tag)) {
+                                        // Don't generate file
+                                    }
+                                    if (tag.equalsIgnoreCase(t.getName())) {
+                                        if (config.filterScenarioOutlineByLines()) {
+                                            List<Examples> examples = scenarioOutline.getExamples();
+                                            for (Examples example : examples) {
+                                                List<TableRow> tableBody = example.getTableBody();
+                                                for (TableRow tableRow : tableBody) {
+                                                    setScenarioOutlineLocation(file
+                                                        .getCanonicalPath() + ":" + tableRow
+                                                        .getLocation().getLine());
+                                                    generateItFiles(tag, file.getName(),
+                                                        outputDirectory);
+                                                }
+                                            }
+                                        } else {
+                                            setFeatureFileLocation(file);
+                                            generateItFiles(tag, file.getName(), outputDirectory);
+                                        }
+                                    }
+                                }
+                            }
+                            if (definition instanceof Scenario) {
+                                Scenario scenario = (Scenario) definition;
+                                List<Tag> scenarioTags = scenario.getTags();
+                                for (Tag t : scenarioTags) {
+                                    if (tag.startsWith("~") && ("~" + t.getName())
+                                        .equalsIgnoreCase(tag)) {
+                                        // Don't generate file
+                                    }
+                                    if (tag.equalsIgnoreCase(t.getName())) {
+                                        setFeatureFileLocation(file);
+                                        generateItFiles(tag, file.getName(), outputDirectory);
+                                    }
                                 }
                             }
                         }
-                        fileCounter++;
                     }
+
+                } catch (final Exception e) {
+                    config.getLog().info(
+                        "Failed to read contents of " + file.getPath()
+                            + ". Parallel Test shall be created.");
                 }
             }
-        } else {
-            for (final File file : featureFiles) {
+        }
 
-                if (shouldSkipFile(file)) {
-                    continue;
-                }
+    }
 
-                outputFileName = classNamingScheme.generate(file.getName());
-
-                setFeatureFileLocation(file);
-
-                final File outputFile = new File(outputDirectory, outputFileName + ".java");
-                FileWriter writer = null;
+    private void generateItFiles(final String tag, final String fileName, final File
+        outputDirectory)
+        throws MojoExecutionException {
+        outputFileName = classNamingScheme.generate(fileName);
+        final File outputFile = new File(outputDirectory, outputFileName + ".java");
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(outputFile);
+            writeContentFromTemplate(writer, tag);
+        } catch (final IOException e) {
+            throw new MojoExecutionException("Error creating file "
+                + outputFile, e);
+        } finally {
+            if (writer != null) {
                 try {
-                    writer = new FileWriter(outputFile);
-                    writeContentFromTemplate(writer);
-                } catch (final IOException exception) {
-                    throw new MojoExecutionException("Error creating file "
-                        + outputFile, exception);
-                } finally {
-                    if (writer != null) {
-                        try {
-                            writer.close();
-                        } catch (final IOException exception) {
-                            // ignore
-                            System.out.println("Failed to close file: " + outputFile);
-                        }
-                    }
+                    writer.close();
+                } catch (final IOException e) {
+                    // ignore
                 }
-
-                fileCounter++;
             }
         }
-    }
-
-    private boolean shouldSkipFile(final File file) {
-        if (config.filterFeaturesByTags()) {
-
-            try {
-                final String fileContents = FileUtils.readFileToString(file);
-
-                if (!fileContainsMatchingTags(fileContents)) {
-                    return true;
-                }
-            } catch (final IOException e) {
-                config.getLog().info(
-                    "Failed to read contents of " + file.getPath()
-                        + ". Parallel Test shall be created.");
-            }
-        }
-        return false;
-    }
-
-    private boolean fileContainsMatchingTags(final String fileContents) {
-
-        final List<List<String>> tagGroupsAnded = TagParser
-            .splitQuotedTagsIntoParts(overriddenParameters.getTags());
-
-        // Tag groups are and'd together
-        for (final List<String> tagGroup : tagGroupsAnded) {
-            // individual tags are or'd together
-            if (!fileContainsAnyTags(fileContents, tagGroup)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private boolean fileContainsMatchingTags(final String fileContents, String tag) {
-
-        if (fileContents.contains(tag)) {
-            return true;
-        }
-        return false;
-    }
-
-
-    private boolean fileContainsAnyTags(final String fileContents, final List<String> tags) {
-
-        for (final String tag : tags) {
-
-            if (tag.startsWith("~")) {
-                // not tags must be ignored - cannot guarantee that a feature
-                // file containing an ignored tag does not contain scenarios
-                // that
-                // should be included
-                return true;
-            }
-
-            if (fileContents.contains(tag)) {
-                return true;
-            }
-        }
-
-        return false;
+        fileCounter++;
     }
 
     /**
@@ -230,31 +210,8 @@ public class CucumberItGenerator {
             .replace(File.separatorChar, '/');
     }
 
-    private void writeContentFromTemplate(final Writer writer) {
-
-        final VelocityContext context = new VelocityContext();
-        context.put("strict", overriddenParameters.isStrict());
-        context.put("featureFile", featureFileLocation);
-        context.put("reports", createFormatStrings());
-        context.put("tags", overriddenParameters.getTags());
-        context.put("monochrome", overriddenParameters.isMonochrome());
-        context.put("cucumberOutputDir", config.getCucumberOutputDir());
-        if (config.useReRun()) {
-            context.put("glue", overriddenParameters.getGlue());
-        } else {
-            context.put("glue", quoteGlueStrings());
-        }
-        context.put("className", FilenameUtils.removeExtension(outputFileName));
-        context.put(
-            "outPutPath",
-            config.getCucumberOutputDir().replace('\\', '/') + "/"
-                + FilenameUtils.removeExtension(outputFileName) + "/"
-                + FilenameUtils.removeExtension(outputFileName));
-        context.put("retryCount", overriddenRerunOptionsParameters.getRetryCount());
-        context.put("htmlFormat", this.htmlFormat);
-        context.put("jsonFormat", this.jsonFormat);
-        context.put("rerunFormat", this.rerunFormat);
-        velocityTemplate.merge(context, writer);
+    private void setScenarioOutlineLocation(final String outLine) {
+        featureFileLocation = outLine.replace(File.separatorChar, '/');
     }
 
     private void writeContentFromTemplate(final Writer writer, final String tag) {
@@ -262,6 +219,7 @@ public class CucumberItGenerator {
         final VelocityContext context = new VelocityContext();
         context.put("strict", overriddenParameters.isStrict());
         context.put("featureFile", featureFileLocation);
+        context.put("flagSOutline", config.filterScenarioOutlineByLines());
         context.put("reports", createFormatStrings());
         context.put("tags", "\"" + tag + "\"");
         context.put("monochrome", overriddenParameters.isMonochrome());

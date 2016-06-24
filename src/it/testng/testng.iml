@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/filter-by-tag" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/filter-by-tag5-keep-tags-if-no-tags-in-cucumber-opts" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/filter-by-tag6-override-tags-if-tags-in-cucumber-opts" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/illegal-escape-char" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/issue_15-feature-naming-scheme" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/multiple-format" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/output-directory" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/simple-it" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
