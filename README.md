@@ -5,7 +5,7 @@ A common approach for running Cucumber features in parallel is to create a suite
 
 This is a pain to maintain and not very DRY.
 
-This is where the cucumber-jvm-parallel-plugin comes in.  This plugin automatically generates a Cucumber JUnit or TestNG runner for each feature file found in your project.
+This is where the cucumber-jvm-parallel-plugin comes in.  This plugin automatically generates a Cucumber JUnit or TestNG runner for each scenario, each Scenario Outline as well as feature wise runner for feature files found in your project.
 
 Usage
 -----
@@ -61,7 +61,9 @@ Add the following to your POM file:
          <!-- The class naming pattern to use.  Only required/used if naming scheme is 'pattern'.-->
          <namingPattern>Parallel{c}IT</namingPattern>
          <!-- It is meaningless to keep reruning without looking for root cause of the failure. Test case/features/scenarios won't pass magically so you can use max 5 rerun. -->
-	     <retryCount>0</retryCount>
+	 <retryCount>0</retryCount>
+	 <!-- It will generate seperate runner for each example -->
+	 <filterScenarioOutlineByLines>true</filterScenarioOutlineByLines>
       </configuration>
     </execution>
   </executions>
@@ -112,13 +114,12 @@ The `namingPattern` property is for the **class name** only.  Do not add the `.j
 
 ###Re-Run Functionality
 
-> **Why it's bad to keep re-running more than 1 or more time ?:**
-* When we run test cases first time, we got some failure due to environment issues or network issues or grid management issues or Browsers issues, such test cases we are not considering as **Flaky**.
- If we are getting same failure result on each run such test cases we count as Flaky, It is meaning less to keep running such test cases so with this plugin you can try only 5 times max.
-> **What it does?:**
-* It re-run only failed test cases on each run and after complete run it generate consolidated report.
-> **How to enable it?:**
-* specify property counts between 1 to 5.
+**Why it's bad to keep re-running more than 1 or more time ?** </br>
+When we run test cases first time, we got some failure due to environment issues or network issues or grid management issues or Browsers issues, such test cases we are not considering as **Flaky**. If we are getting same failure result on each run such test cases we count as Flaky, It is meaning less to keep running such test cases so with this plugin you can try only 5 times max. </br>
+**What it does?** </br>
+It re-run only failed test cases on each run and after complete run it generate consolidated report. </br>
+**How to enable it?** </br>
+specify property counts between 1 to 5.</br>
 ```xml
 <retryCount>1</retryCount>
 ```
