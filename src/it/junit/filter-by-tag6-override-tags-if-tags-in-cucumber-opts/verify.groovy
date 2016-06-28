@@ -18,8 +18,8 @@ import cucumber.api.CucumberOptions;
 import cucumber.api.junit.Cucumber;
 
 @RunWith(Cucumber.class)
-@CucumberOptions(strict = true, features = {"classpath:features/feature1.feature"}, plugin = {"json:target/cucumber-parallel/1.json",
-"pretty"}, monochrome = false, tags = {"@override"}, glue = { "foo", "bar" })
+@CucumberOptions(strict = true, features = {"src/test/resources/features/feature1.feature"}, tags = {"@override"}, plugin = {"json:target/cucumber-parallel/1.json",
+"pretty"}, monochrome = false, glue = { "foo", "bar" })
 public class Parallel01IT {
 }"""
 
@@ -32,8 +32,8 @@ import cucumber.api.CucumberOptions;
 import cucumber.api.junit.Cucumber;
 
 @RunWith(Cucumber.class)
-@CucumberOptions(strict = true, features = {"classpath:features/feature2.feature"}, plugin = {"json:target/cucumber-parallel/2.json",
-"pretty"}, monochrome = false, tags = {"@override"}, glue = { "foo", "bar" })
+@CucumberOptions(strict = true, features = {"src/test/resources/features/feature2.feature"}, tags = {"@override"}, plugin = {"json:target/cucumber-parallel/2.json",
+"pretty"}, monochrome = false,  glue = { "foo", "bar" })
 public class Parallel02IT {
 }"""
 

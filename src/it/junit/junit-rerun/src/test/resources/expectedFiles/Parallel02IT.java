@@ -63,13 +63,13 @@ public class Parallel02IT {
 
     private void defaultRun() {
         List<String> arguments = new ArrayList<String>();
-        arguments.add("classpath:features/feature2.feature");
-        String[] tags = {"@complete", "@accepted"};
-        for (String tag : tags) {
-            arguments.add("--tags");
-            arguments.add(tag);
-        }
-        arguments.add("--plugin");
+                           arguments.add("src/test/resources/features/feature2.feature");
+           String[] tags = {"@feature2"};
+           for (String tag : tags) {
+               arguments.add("--tags");
+               arguments.add(tag);
+           }
+                arguments.add("--plugin");
         arguments.add("html:target/cucumber-parallel/Parallel02IT/Parallel02IT.html");
         arguments.add("--plugin");
         arguments.add("json:target/cucumber-parallel/Parallel02IT/Parallel02IT.json");

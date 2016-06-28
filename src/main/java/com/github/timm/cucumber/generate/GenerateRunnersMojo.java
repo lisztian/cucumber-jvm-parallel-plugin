@@ -77,7 +77,7 @@ public class GenerateRunnersMojo extends AbstractMojo implements FileGeneratorCo
      */
     @Parameter(defaultValue = "src/test/resources/features/",
         property = "featuresDir", required = true)
-    private File featuresDirectory;
+    private String featuresDirectory;
 
     /**
      * @see CucumberOptions.strict
@@ -119,6 +119,10 @@ public class GenerateRunnersMojo extends AbstractMojo implements FileGeneratorCo
     private boolean
         filterFeaturesByTags;
 
+    @Parameter(defaultValue = "false",
+        property = "filterScenarioOutlineByLines", required = true)
+    private boolean
+        filterScenarioOutlineByLines;
 
     @Parameter(defaultValue = "false",
         property = "useTestNG", required = true)
@@ -149,14 +153,14 @@ public class GenerateRunnersMojo extends AbstractMojo implements FileGeneratorCo
     private CucumberItGenerator fileGenerator;
 
     public void execute() throws MojoExecutionException {
-        
-        if (!featuresDirectory.exists()) {
+
+        if (!new File(featuresDirectory).exists()) {
             throw new MojoExecutionException("Features directory does not exist");
         }
         if (retryCount > 0) {
             useReRun = true;
         }
-        
+
         createOutputDirIfRequired();
 
         final OverriddenCucumberOptionsParameters overriddenParameters =
@@ -225,7 +229,7 @@ public class GenerateRunnersMojo extends AbstractMojo implements FileGeneratorCo
         return filterFeaturesByTags;
     }
 
-    public File getFeaturesDirectory() {
+    public String getFeaturesDirectory() {
         return featuresDirectory;
     }
 
@@ -253,4 +257,7 @@ public class GenerateRunnersMojo extends AbstractMojo implements FileGeneratorCo
         return useReRun;
     }
 
+    public boolean filterScenarioOutlineByLines() {
+        return filterScenarioOutlineByLines;
+    }
 }

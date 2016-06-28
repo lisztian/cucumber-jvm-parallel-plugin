@@ -63,12 +63,17 @@ public class $className {
 
     private void defaultRun() {
         List<String> arguments = new ArrayList<String>();
-        arguments.add("classpath:$featureFile");
-        String[] tags = {$tags};
-        for (String tag : tags) {
-            arguments.add("--tags");
-            arguments.add(tag);
-        }
+        #set( $condition = $flagSOutline)
+        #if ($condition)
+               arguments.add("$featureFile");
+        #else
+           arguments.add("$featureFile");
+           String[] tags = {$tags};
+           for (String tag : tags) {
+               arguments.add("--tags");
+               arguments.add(tag);
+           }
+        #end
         arguments.add("--plugin");
         arguments.add($htmlFormat);
         arguments.add("--plugin");

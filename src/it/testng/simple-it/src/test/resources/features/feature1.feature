@@ -1,3 +1,4 @@
+@complete
 Feature: Feature1
 
   Scenario: Generate TestNG Runner for each feature file
@@ -11,3 +12,13 @@ Feature: Feature1
     public class Parallel01IT extends AbstractTestNGCucumberTests {
     }
     """
+
+  @complete
+  Scenario Outline: Generate TestNG runner for each outline
+    Given I have "<examples>"
+    Examples:
+      |examples |
+      |    example1   |
+      |    example2   |
+      |    example3   |
+      |    example4   |

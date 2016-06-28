@@ -2,7 +2,6 @@ package com.github.timm.cucumber.generate;
 
 import org.apache.maven.plugin.logging.Log;
 
-import java.io.File;
 
 public interface FileGeneratorConfig {
 
@@ -10,7 +9,7 @@ public interface FileGeneratorConfig {
 
     Log getLog();
 
-    File getFeaturesDirectory();
+    String getFeaturesDirectory();
 
     String getEncoding();
 
@@ -24,5 +23,5 @@ public interface FileGeneratorConfig {
     
     boolean useReRun();
 
-
+    boolean filterScenarioOutlineByLines();
 }

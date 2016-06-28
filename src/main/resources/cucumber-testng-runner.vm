@@ -1,11 +1,15 @@
 import cucumber.api.CucumberOptions;
 import cucumber.api.testng.AbstractTestNGCucumberTests;
-
+#set( $condition = $flagSOutline)
 @CucumberOptions(strict = $strict,
-    features = {"classpath:$featureFile"},
+   #if ($condition)
+       features = {"$featureFile"},
+   #else
+       features = {"$featureFile"},
+       tags = {$tags},
+   #end
     plugin = {$reports, "pretty"},
     monochrome = ${monochrome},
-    tags = {$tags},
     glue = { $glue })
 public class $className extends AbstractTestNGCucumberTests {
 }
