@@ -60,7 +60,8 @@ public class Parser<T> {
         do {
             token = readToken(context);
             state = matchToken(state, token, context);
-        } while (!token.isEOF());
+        }
+        while (!token.isEOF());
 
         endRule(context, RuleType.GherkinDocument);
 
@@ -2707,7 +2708,8 @@ public class Parser<T> {
                 match = true;
                 break;
             }
-        } while (false
+        }
+        while (false
             || match_Empty(context, token)
             || match_Comment(context, token)
             || match_TagLine(context, token)
