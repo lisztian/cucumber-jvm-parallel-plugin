@@ -97,6 +97,19 @@ public class ExtendedRuntimeOptions extends RuntimeOptions {
 
     }
 
+    static void loadUsageTextIfNeeded() {
+        if (usageText == null) {
+            try {
+                InputStreamReader e = new InputStreamReader(
+                    FixJava.class.getResourceAsStream("/cucumber/api/cli/USAGE.txt"), "UTF-8");
+                usageText = FixJava.readReader(e);
+            } catch (Exception var1) {
+                usageText = "Could not load usage text: " + var1.toString();
+            }
+        }
+
+    }
+
     private void parse(List<String> args) {
         ArrayList parsedFilters = new ArrayList();
         ArrayList parsedFeaturePaths = new ArrayList();
@@ -235,7 +248,8 @@ public class ExtendedRuntimeOptions extends RuntimeOptions {
             }
 
             pathName = (String) var2.next();
-        } while (!pathName.startsWith("@") && !PathWithLines.hasLineFilters(pathName));
+        }
+        while (!pathName.startsWith("@") && !PathWithLines.hasLineFilters(pathName));
 
         return true;
     }
@@ -257,19 +271,6 @@ public class ExtendedRuntimeOptions extends RuntimeOptions {
     private void printUsage() {
         loadUsageTextIfNeeded();
         System.out.println(usageText);
-    }
-
-    static void loadUsageTextIfNeeded() {
-        if (usageText == null) {
-            try {
-                InputStreamReader e = new InputStreamReader(
-                    FixJava.class.getResourceAsStream("/cucumber/api/cli/USAGE.txt"), "UTF-8");
-                usageText = FixJava.readReader(e);
-            } catch (Exception var1) {
-                usageText = "Could not load usage text: " + var1.toString();
-            }
-        }
-
     }
 
     private int printI18n(String language) {
@@ -299,7 +300,8 @@ public class ExtendedRuntimeOptions extends RuntimeOptions {
             }
 
             i18n = (I18n) var3.next();
-        } while (!i18n.getIsoCode().equalsIgnoreCase(language));
+        }
+        while (!i18n.getIsoCode().equalsIgnoreCase(language));
 
         System.out.println(i18n.getKeywordTable());
         return 0;
@@ -375,7 +377,8 @@ public class ExtendedRuntimeOptions extends RuntimeOptions {
                             }
 
                             plugin = var4.next();
-                        } while (!type.isInstance(plugin));
+                        }
+                        while (!type.isInstance(plugin));
 
                         try {
                             Utils.invoke(plugin, method, 0L, args);
