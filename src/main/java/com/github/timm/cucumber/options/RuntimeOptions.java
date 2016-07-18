@@ -167,7 +167,8 @@ public class RuntimeOptions {
             }
 
             pathName = (String) var2.next();
-        } while (!pathName.startsWith("@") && !PathWithLines.hasLineFilters(pathName));
+        } 
+        while (!pathName.startsWith("@") && !PathWithLines.hasLineFilters(pathName));
 
         return true;
     }
