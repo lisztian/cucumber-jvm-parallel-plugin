@@ -127,7 +127,7 @@ public class CucumberItGenerator {
                                         // Don't generate file
                                     }
                                     if (tag.equalsIgnoreCase(t.getName())) {
-                                        if (config.filterScenarioOutlineByLines()) {
+                                        if (config.getFilterScenarioOutlineByLines()) {
                                             List<Examples> examples = scenarioOutline.getExamples();
                                             for (Examples example : examples) {
                                                 List<TableRow> tableBody = example.getTableBody();
