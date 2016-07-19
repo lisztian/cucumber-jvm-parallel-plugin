@@ -88,8 +88,13 @@ public class CucumberItGenerator {
         }
         List<String> parsedTags = new ArrayList<String>();
         String[] allTags = overriddenParameters.getTags().split(",");
-        for (String t : allTags) {
-            parsedTags.add(t.replaceAll("\"", "").replaceAll("\\s+", ""));
+        // length is 1 because of --tags in RuntimeOptions
+        if (allTags.length == 1) {
+            parsedTags.addAll(getAllTagsFromAllFeatureFiles());
+        } else {
+            for (String t : allTags) {
+                parsedTags.add(t.replaceAll("\"", "").replaceAll("\\s+", ""));
+            }
         }
         for (final String tag : parsedTags) {
             for (final File file : featureFiles) {
@@ -324,6 +329,50 @@ public class CucumberItGenerator {
             }
         }
         return sb.toString();
+    }
+    
+    private List<String> getAllTagsFromAllFeatureFiles() {
+        List<String> tags = new ArrayList<String>();
+        Collection<File> featureFiles = new ArrayList<File>();
+        featureFiles = FileUtils.listFiles(new File(config.getFeaturesDirectory()),
+            new String[] {"feature"}, true);
+        for (final File file : featureFiles) {
+            try {
+                Parser<GherkinDocument> parser = new Parser<>(new AstBuilder());
+                GherkinDocument gherkinDocument = null;
+                try {
+                    gherkinDocument = parser.parse(new FileReader(file),
+                        new TokenMatcher());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                List<Tag> featureTags = gherkinDocument.getFeature().getTags();
+                if (config.filterFeaturesByTags()) {
+                    tags.add(featureTags.get(0).getName());
+                } else {
+                    List<ScenarioDefinition> definitions = gherkinDocument.getFeature()
+                        .getChildren();
+                    for (ScenarioDefinition definition : definitions) {
+                        if (definition instanceof ScenarioOutline) {
+                            ScenarioOutline scenarioOutline = (ScenarioOutline) definition;
+                            List<Tag> outlineTags = scenarioOutline.getTags();
+                            tags.add(outlineTags.get(0).getName());
+                        }
+                        if (definition instanceof Scenario) {
+                            Scenario scenario = (Scenario) definition;
+                            List<Tag> scenarioTags = scenario.getTags();
+                            tags.add(scenarioTags.get(0).getName());
+                        }
+                    }
+                }
+
+            } catch (final Exception e) {
+                config.getLog().info(
+                    "Failed to read contents of " + file.getPath()
+                        + ". Parallel Test shall be created.");
+            }
+        }
+        return tags;
     }
 
 }
