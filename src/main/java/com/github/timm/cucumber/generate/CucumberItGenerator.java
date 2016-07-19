@@ -118,6 +118,7 @@ public class CucumberItGenerator {
                             .getChildren();
                         for (ScenarioDefinition definition : definitions) {
                             if (definition instanceof ScenarioOutline) {
+                                config.setFilterScenarioOutlineByLines(true);
                                 ScenarioOutline scenarioOutline = (ScenarioOutline) definition;
                                 List<Tag> outlineTags = scenarioOutline.getTags();
                                 for (Tag t : outlineTags) {
@@ -153,6 +154,7 @@ public class CucumberItGenerator {
                                 }
                             }
                             if (definition instanceof Scenario) {
+                                config.setFilterScenarioOutlineByLines(false);
                                 Scenario scenario = (Scenario) definition;
                                 List<Tag> scenarioTags = scenario.getTags();
                                 for (Tag t : scenarioTags) {
@@ -225,7 +227,7 @@ public class CucumberItGenerator {
         final VelocityContext context = new VelocityContext();
         context.put("strict", overriddenParameters.isStrict());
         context.put("featureFile", featureFileLocation);
-        context.put("flagSOutline", config.filterScenarioOutlineByLines());
+        context.put("flagSOutline", config.getFilterScenarioOutlineByLines());
         context.put("reports", createFormatStrings());
         context.put("tags", "\"" + tag + "\"");
         context.put("monochrome", overriddenParameters.isMonochrome());
