@@ -61,9 +61,9 @@ Add the following to your POM file:
          <!-- The class naming pattern to use.  Only required/used if naming scheme is 'pattern'.-->
          <namingPattern>Parallel{c}IT</namingPattern>
          <!-- It is meaningless to keep reruning without looking for root cause of the failure. Test case/features/scenarios won't pass magically so you can use max 5 rerun. -->
-	     <retryCount>0</retryCount>
-	  <!-- set true to generate multile runner per example in scenario outline. -->
-	  <filterScenarioOutlineByLines>true</filterScenarioOutlineByLines>
+         <retryCount>0</retryCount>
+         <!-- set true to generate multile runner per example in scenario outline. -->
+         <filterScenarioOutlineByLines>true</filterScenarioOutlineByLines>
       </configuration>
     </execution>
   </executions>
