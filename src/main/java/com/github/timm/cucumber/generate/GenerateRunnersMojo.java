@@ -257,7 +257,11 @@ public class GenerateRunnersMojo extends AbstractMojo implements FileGeneratorCo
         return useReRun;
     }
 
-    public boolean filterScenarioOutlineByLines() {
+    public boolean getFilterScenarioOutlineByLines() {
         return filterScenarioOutlineByLines;
+    }
+
+    public void setFilterScenarioOutlineByLines(boolean flag) {
+        this.filterScenarioOutlineByLines = flag;
     }
 }
