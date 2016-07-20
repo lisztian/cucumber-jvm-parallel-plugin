@@ -180,7 +180,10 @@ public class CucumberItGenerator {
                 } catch (final Exception e) {
                     config.getLog().info(
                         "Failed to read contents of " + file.getPath()
-                            + ". Parallel Test shall be created.");
+                            + ". Check Feature file syntax errors and make sure that Scenario or "
+                            + "Scenario outline are "
+                            + "tagged with at "
+                            + "least one unique tag.");
                 }
             }
         }
