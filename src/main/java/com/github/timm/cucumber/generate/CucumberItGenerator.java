@@ -74,12 +74,12 @@ public class CucumberItGenerator {
         }
     }
 
-    void generateCucumberItFiles(final File outputDirectory)
+    protected void generateCucumberItFiles(final File outputDirectory)
         throws MojoExecutionException {
 
         Collection<File> featureFiles = new ArrayList<File>();
         if (overriddenParameters.getFeaturePaths().size() != 0) {
-            for (String f : overriddenParameters.getFeaturePaths()) {
+            for (final String f : overriddenParameters.getFeaturePaths()) {
                 featureFiles.add(new File(f));
             }
         } else {
@@ -92,10 +92,11 @@ public class CucumberItGenerator {
         if (allTags.length == 1) {
             parsedTags.addAll(getAllTagsFromAllFeatureFiles());
         } else {
-            for (String t : allTags) {
+            for (final String t : allTags) {
                 parsedTags.add(t.replaceAll("\"", "").replaceAll("\\s+", ""));
             }
         }
+
         for (final String tag : parsedTags) {
             for (final File file : featureFiles) {
                 try {
@@ -109,11 +110,11 @@ public class CucumberItGenerator {
                     }
                     List<Tag> featureTags = gherkinDocument.getFeature().getTags();
                     if (config.filterFeaturesByTags()) {
-                        for (Tag t : featureTags) {
+                        for (final Tag t : featureTags) {
                             if (tag.startsWith("~") && ("~" + t.getName()).equalsIgnoreCase(tag)) {
                                 // Don't generate file
                             }
-                            if (tag.equalsIgnoreCase(t.getName())) {
+                            if (t.getName().equals(tag)) {
                                 setFeatureFileLocation(file);
                                 generateItFiles(tag, file.getName(), outputDirectory);
                             }
@@ -121,22 +122,22 @@ public class CucumberItGenerator {
                     } else {
                         List<ScenarioDefinition> definitions = gherkinDocument.getFeature()
                             .getChildren();
-                        for (ScenarioDefinition definition : definitions) {
+                        for (final ScenarioDefinition definition : definitions) {
                             if (definition instanceof ScenarioOutline) {
                                 config.setFilterScenarioOutlineByLines(true);
                                 ScenarioOutline scenarioOutline = (ScenarioOutline) definition;
                                 List<Tag> outlineTags = scenarioOutline.getTags();
-                                for (Tag t : outlineTags) {
+                                for (final Tag t : outlineTags) {
                                     if (tag.startsWith("~") && ("~" + t.getName())
-                                        .equalsIgnoreCase(tag)) {
+                                        .equals(tag)) {
                                         // Don't generate file
                                     }
-                                    if (tag.equalsIgnoreCase(t.getName())) {
+                                    if (t.getName().equals(tag)) {
                                         if (config.getFilterScenarioOutlineByLines()) {
                                             List<Examples> examples = scenarioOutline.getExamples();
-                                            for (Examples example : examples) {
+                                            for (final Examples example : examples) {
                                                 List<TableRow> tableBody = example.getTableBody();
-                                                for (TableRow tableRow : tableBody) {
+                                                for (final TableRow tableRow : tableBody) {
                                                     setScenarioOutlineLocation(
                                                         file.getPath()
                                                             .substring(file.getPath()
@@ -162,12 +163,12 @@ public class CucumberItGenerator {
                                 config.setFilterScenarioOutlineByLines(false);
                                 Scenario scenario = (Scenario) definition;
                                 List<Tag> scenarioTags = scenario.getTags();
-                                for (Tag t : scenarioTags) {
+                                for (final Tag t : scenarioTags) {
                                     if (tag.startsWith("~") && ("~" + t.getName())
-                                        .equalsIgnoreCase(tag)) {
+                                        .equals(tag)) {
                                         // Don't generate file
                                     }
-                                    if (tag.equalsIgnoreCase(t.getName())) {
+                                    if (t.getName().equals(tag)) {
                                         setFeatureFileLocation(file);
                                         generateItFiles(tag, file.getName(), outputDirectory);
                                     }
@@ -372,6 +373,10 @@ public class CucumberItGenerator {
                         + ". Parallel Test shall be created.");
             }
         }
+        Set<String> sUniqueElement = new HashSet<String>();
+        sUniqueElement.addAll(tags);
+        tags.clear();
+        tags.addAll(sUniqueElement);
         return tags;
     }
 
