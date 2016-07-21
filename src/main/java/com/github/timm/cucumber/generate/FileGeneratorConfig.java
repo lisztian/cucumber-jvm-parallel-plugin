@@ -23,7 +23,7 @@ public interface FileGeneratorConfig {
     
     boolean useReRun();
 
-    boolean getFilterScenarioOutlineByLines();
+    boolean getFilterScenarioAndOutlineByLines();
     
-    void setFilterScenarioOutlineByLines(boolean flag);
+    void setFilterScenarioAndOutlineByLines(boolean flag);
 }
