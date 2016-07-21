@@ -90,7 +90,6 @@ public class CucumberItGenerator {
         }
         List<String> parsedTags = new ArrayList<String>();
         String[] allTags = overriddenParameters.getTags().split(",");
-        System.out.println(Arrays.toString(allTags));
         // length is 1 because of --tags in RuntimeOptions
         if (allTags.length == 1 && allTags[0].equals("--tags")) {
             parsedTags.addAll(getAllTagsFromAllFeatureFiles());
