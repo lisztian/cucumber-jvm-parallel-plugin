@@ -120,9 +120,9 @@ public class GenerateRunnersMojo extends AbstractMojo implements FileGeneratorCo
         filterFeaturesByTags;
 
     @Parameter(defaultValue = "false",
-        property = "filterScenarioOutlineByLines", required = true)
+        property = "filterScenarioAndOutlineByLines", required = true)
     private boolean
-        filterScenarioOutlineByLines;
+        filterScenarioAndOutlineByLines;
 
     @Parameter(defaultValue = "false",
         property = "useTestNG", required = true)
@@ -257,11 +257,11 @@ public class GenerateRunnersMojo extends AbstractMojo implements FileGeneratorCo
         return useReRun;
     }
 
-    public boolean getFilterScenarioOutlineByLines() {
-        return filterScenarioOutlineByLines;
+    public boolean getFilterScenarioAndOutlineByLines() {
+        return filterScenarioAndOutlineByLines;
     }
 
-    public void setFilterScenarioOutlineByLines(boolean flag) {
-        this.filterScenarioOutlineByLines = flag;
+    public void setFilterScenarioAndOutlineByLines(boolean flag) {
+        this.filterScenarioAndOutlineByLines = flag;
     }
 }
