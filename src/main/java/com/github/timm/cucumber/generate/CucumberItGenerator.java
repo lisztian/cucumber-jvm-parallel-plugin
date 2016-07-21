@@ -90,8 +90,9 @@ public class CucumberItGenerator {
         }
         List<String> parsedTags = new ArrayList<String>();
         String[] allTags = overriddenParameters.getTags().split(",");
+        System.out.println(Arrays.toString(allTags));
         // length is 1 because of --tags in RuntimeOptions
-        if (allTags.length == 1) {
+        if (allTags.length == 1 && allTags[0].equals("--tags")) {
             parsedTags.addAll(getAllTagsFromAllFeatureFiles());
         } else {
             for (final String t : allTags) {
@@ -113,7 +114,7 @@ public class CucumberItGenerator {
                     List<Tag> featureTags = gherkinDocument.getFeature().getTags();
                     if (config.filterFeaturesByTags()) {
                         for (final Tag t : featureTags) {
-                            if (tag.startsWith("~") && ("~" + t.getName()).equalsIgnoreCase(tag)) {
+                            if (tag.startsWith("~") && ("~" + t.getName()).equals(tag)) {
                                 // Don't generate file
                             }
                             if (t.getName().equals(tag)) {
@@ -126,7 +127,6 @@ public class CucumberItGenerator {
                             .getChildren();
                         for (final ScenarioDefinition definition : definitions) {
                             if (definition instanceof ScenarioOutline) {
-                                config.setFilterScenarioOutlineByLines(true);
                                 ScenarioOutline scenarioOutline = (ScenarioOutline) definition;
                                 List<Tag> outlineTags = scenarioOutline.getTags();
                                 for (final Tag t : outlineTags) {
@@ -135,7 +135,7 @@ public class CucumberItGenerator {
                                         // Don't generate file
                                     }
                                     if (t.getName().equals(tag)) {
-                                        if (config.getFilterScenarioOutlineByLines()) {
+                                        if (config.getFilterScenarioAndOutlineByLines()) {
                                             List<Examples> examples = scenarioOutline.getExamples();
                                             for (final Examples example : examples) {
                                                 List<TableRow> tableBody = example.getTableBody();
@@ -162,7 +162,6 @@ public class CucumberItGenerator {
                                 }
                             }
                             if (definition instanceof Scenario) {
-                                config.setFilterScenarioOutlineByLines(false);
                                 Scenario scenario = (Scenario) definition;
                                 List<Tag> scenarioTags = scenario.getTags();
                                 for (final Tag t : scenarioTags) {
@@ -171,8 +170,21 @@ public class CucumberItGenerator {
                                         // Don't generate file
                                     }
                                     if (t.getName().equals(tag)) {
-                                        setFeatureFileLocation(file);
-                                        generateItFiles(tag, file.getName(), outputDirectory);
+                                        if (config.getFilterScenarioAndOutlineByLines()) {
+                                            setScenarioOutlineLocation(
+                                                file.getPath()
+                                                    .substring(file.getPath()
+                                                        .indexOf(
+                                                            new File(
+                                                                config
+                                                                    .getFeaturesDirectory())
+                                                                .getPath()))
+                                                    + ":" + scenario.getLocation().getLine());
+                                            generateItFiles(tag, file.getName(), outputDirectory);
+                                        } else {
+                                            setFeatureFileLocation(file);
+                                            generateItFiles(tag, file.getName(), outputDirectory);
+                                        }
                                     }
                                 }
                             }
@@ -185,7 +197,7 @@ public class CucumberItGenerator {
                             + ". Check Feature file syntax errors and make sure that Scenario or "
                             + "Scenario outline are "
                             + "tagged with at "
-                            + "least one unique tag.");
+                            + "least one tag.");
                 }
             }
         }
@@ -238,7 +250,7 @@ public class CucumberItGenerator {
         final VelocityContext context = new VelocityContext();
         context.put("strict", overriddenParameters.isStrict());
         context.put("featureFile", featureFileLocation);
-        context.put("flagSOutline", config.getFilterScenarioOutlineByLines());
+        context.put("flagSOutline", config.getFilterScenarioAndOutlineByLines());
         context.put("reports", createFormatStrings());
         context.put("tags", "\"" + tag + "\"");
         context.put("monochrome", overriddenParameters.isMonochrome());
@@ -358,7 +370,7 @@ public class CucumberItGenerator {
                 } else {
                     List<ScenarioDefinition> definitions = gherkinDocument.getFeature()
                         .getChildren();
-                    for (ScenarioDefinition definition : definitions) {
+                    for (final ScenarioDefinition definition : definitions) {
                         if (definition instanceof ScenarioOutline) {
                             ScenarioOutline scenarioOutline = (ScenarioOutline) definition;
                             List<Tag> outlineTags = scenarioOutline.getTags();
@@ -375,7 +387,10 @@ public class CucumberItGenerator {
             } catch (final Exception e) {
                 config.getLog().info(
                     "Failed to read contents of " + file.getPath()
-                        + ". Parallel Test shall be created.");
+                        + ". Check Feature file syntax errors and make sure that Scenario or "
+                        + "Scenario outline are "
+                        + "tagged with at "
+                        + "least one tag." );
             }
         }
         Set<String> sUniqueElement = new HashSet<String>();
